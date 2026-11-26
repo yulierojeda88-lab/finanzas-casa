@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Finanzas">
+<meta name="theme-color" content="#0F766E">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<title>Finanzas Casa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: calm, practical money tool for one household — clear numbers, no noise.
+   IDEA: a pocket ledger — one big answer ("lo que necesitas esta semana") on top.
+   PICTURE: the teal goal card with live progress bar is the hero of Inicio.
+   COLOUR and TYPE: off-white ground, ink, teal accent, navy for savings, orange for alerts; Inter, four sizes.
+   LAYOUT: single phone column (max 480px), bottom tab bar, cards stacked. */
+:root{color-scheme:light dark;
+--bg:light-dark(#F4F5F7,#0E1116);--card:light-dark(#FFFFFF,#181C23);--ink:light-dark(#111827,#F3F4F6);
+--mute:light-dark(#4B5563,#A1A8B3);--line:light-dark(#E5E7EB,#2A303A);--acc:light-dark(#0F766E,#2DD4BF);
+--accInk:light-dark(#FFFFFF,#04211E);--navy:light-dark(#1E3A8A,#1E3A8A);--warnBg:light-dark(#FFEDD5,#3A2412);
+--warn:light-dark(#9A3412,#FDBA74);--okBg:light-dark(#ECFDF5,#0B2A22);--ok:light-dark(#065F46,#6EE7B7);
+--neg:light-dark(#B91C1C,#FCA5A5);--pos:light-dark(#047857,#6EE7B7)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 Inter,system-ui,sans-serif;overflow-x:clip}
+.app{max-width:480px;margin:0 auto;min-height:100vh;padding:calc(env(safe-area-inset-top) + 20px) 18px calc(env(safe-area-inset-bottom) + 100px)}
+h1{margin:0;font-size:26px;font-weight:700;letter-spacing:-.02em}
+h2{margin:18px 0 8px;font-size:15px;font-weight:600}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}
+.mnav{display:flex;align-items:center;gap:4px}
+.ib{width:44px;height:44px;border-radius:12px;border:0;background:var(--card);color:var(--ink);display:grid;place-items:center;cursor:pointer}
+.pill{font-size:12px;font-weight:600;padding:6px 10px;border-radius:999px;white-space:nowrap}
+.hero{background:var(--acc);color:var(--accInk);border-radius:22px;padding:20px;display:grid;gap:12px}
+.hero .big{font-size:clamp(36px,11vw,46px);font-weight:700;letter-spacing:-.03em;line-height:1}
+.bar{height:8px;border-radius:999px;background:color-mix(in srgb,currentColor 25%,transparent);overflow:hidden}
+.bar i{display:block;height:100%;background:currentColor;border-radius:999px;transition:width .4s}
+.row2{display:flex;justify-content:space-between;font-size:13px;gap:8px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+.card{background:var(--card);border-radius:16px;padding:14px}
+.stat span{display:block;font-size:12px;color:var(--mute)}.stat b{font-size:20px;white-space:nowrap}
+.list{background:var(--card);border-radius:16px;padding:2px 14px}
+.li{display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:52px;border-bottom:1px solid var(--line)}
+.li:last-child{border-bottom:0}
+.li .t{font-size:14px;font-weight:500}.li .s{font-size:12px;color:var(--mute)}
+.li .a{font-size:14px;font-weight:600;white-space:nowrap}
+.del{width:36px;height:36px;border:0;background:transparent;color:var(--mute);border-radius:10px;cursor:pointer;display:grid;place-items:center;flex:none}
+.empty{border:1px dashed var(--line);border-radius:16px;padding:16px;text-align:center;font-size:13px;color:var(--mute)}
+form{display:grid;gap:10px}
+label{font-size:13px;font-weight:600}
+input,select{width:100%;height:48px;border:1px solid var(--line);border-radius:12px;padding:0 12px;font:16px Inter,system-ui,sans-serif;background:var(--card);color:var(--ink)}
+input.amt{height:58px;font-size:26px;font-weight:700;text-align:center}
+.chips{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.chip{height:46px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:600 14px Inter,sans-serif;cursor:pointer}
+.chip.on{background:var(--acc);border-color:var(--acc);color:var(--accInk)}
+.btn{height:50px;border-radius:14px;border:0;font:600 15px Inter,sans-serif;cursor:pointer;background:var(--ink);color:var(--bg);display:flex;align-items:center;justify-content:center;gap:6px;width:100%}
+.btn.acc{background:var(--acc);color:var(--accInk)}.btn.ghost{background:var(--card);color:var(--ink);border:1px solid var(--line)}
+.btn.warn{background:#C2410C;color:#fff}
+.two{display:flex;gap:10px}
+.note{border-radius:14px;padding:12px 14px;font-size:13px}
+.f2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.dot{width:8px;height:8px;border-radius:999px;display:inline-block;margin-right:8px;flex:none}
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:8px 0 calc(env(safe-area-inset-bottom) + 8px)}
+nav div{max-width:480px;margin:0 auto;display:flex;justify-content:space-around}
+nav button{border:0;background:none;color:var(--mute);font:500 11px Inter,sans-serif;display:grid;justify-items:center;gap:3px;width:72px;min-height:48px;cursor:pointer}
+nav button.on{color:var(--acc);font-weight:700}
+.toast{position:fixed;width:max-content;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom) + 84px);background:var(--ink);color:var(--bg);border-radius:12px;padding:10px 12px 10px 16px;display:flex;gap:12px;align-items:center;font-size:14px;z-index:5;max-width:calc(100% - 32px)}
+.toast button{border:0;background:none;color:inherit;font:700 14px Inter,sans-serif;text-decoration:underline;cursor:pointer;min-height:36px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;z-index:6}
+.sheet{background:var(--bg);width:100%;max-width:480px;border-radius:22px 22px 0 0;padding:20px 18px calc(env(safe-area-inset-bottom) + 20px)}
+.status{font-size:12px;color:var(--mute);text-align:center;margin-top:16px}
+:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+[hidden]{display:none!important}
+@media(prefers-reduced-motion:reduce){.bar i{transition:none}}
+</style>
+</head>
+<body>
+<main class="app">
+  <div class="top">
+    <h1 id="title">Inicio</h1>
+    <div class="mnav">
+      <button class="ib" id="prev" aria-label="Mes anterior"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <span id="mlabel" style="font-size:14px;font-weight:600;min-width:96px;text-align:center"></span>
+      <button class="ib" id="next" aria-label="Mes siguiente"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+    </div>
+  </div>
+
+  <!-- INICIO -->
+  <section id="v-inicio">
+    <div class="hero">
+      <span style="font-size:13px;opacity:.85">Necesitas ganar por semana</span>
+      <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap"><span class="big" id="hWeek">$0</span><span style="font-size:14px;opacity:.85" id="hWeeks"></span></div>
+      <div class="bar"><i id="hBar" style="width:0"></i></div>
+      <div class="row2"><span id="hGot"></span><span style="opacity:.85;white-space:nowrap" id="hGoal"></span></div>
+    </div>
+    <div class="note" id="hStatus" style="margin-top:12px"></div>
+    <div class="grid">
+      <div class="card stat"><span>Gastos del mes</span><b id="sFijos"></b></div>
+      <div class="card stat"><span>Imprevistos</span><b id="sImp"></b></div>
+      <div class="card stat"><span>Promedio semanal</span><b id="sProm"></b></div>
+      <div class="card stat"><span>Sobrante</span><b id="sSob"></b></div>
+    </div>
+    <h2>Próximos pagos</h2>
+    <div id="nextPays"></div>
+    <div class="two" style="margin-top:16px">
+      <button class="btn" data-go="ingresos">+ Ingreso</button>
+      <button class="btn ghost" data-go="gastos">+ Imprevisto</button>
+    </div>
+  </section>
+
+  <!-- INGRESOS -->
+  <section id="v-ingresos" hidden>
+    <form id="fIng" class="card">
+      <label for="iMonto" style="text-align:center;font-weight:500;color:var(--mute)">¿Cuánto ganaste?</label>
+      <input id="iMonto" class="amt" inputmode="decimal" placeholder="$0.00" required>
+      <label>Fuente</label>
+      <div class="chips" id="iSrc"></div>
+      <div class="f2">
+        <div><label for="iFecha">Fecha</label><input id="iFecha" type="date" required></div>
+        <div><label for="iNota">Nota</label><input id="iNota" placeholder="Opcional"></div>
+      </div>
+      <div class="note" id="iPreview" style="background:var(--okBg);color:var(--ok)"></div>
+      <button class="btn acc" type="submit">Guardar ingreso</button>
+    </form>
+    <h2>Ingresos del mes</h2>
+    <div id="ingList"></div>
+  </section>
+
+  <!-- GASTOS -->
+  <section id="v-gastos" hidden>
+    <div class="grid" style="grid-template-columns:repeat(3,minmax(0,1fr));margin-top:0">
+      <div class="card stat" style="padding:10px 12px"><span>Fijos</span><b id="gF" style="font-size:17px"></b></div>
+      <div class="card stat" style="padding:10px 12px"><span>Variables</span><b id="gV" style="font-size:17px"></b></div>
+      <div class="card stat" style="padding:10px 12px;background:var(--ink);color:var(--bg)"><span style="color:inherit;opacity:.8">Total</span><b id="gT" style="font-size:17px"></b></div>
+    </div>
+    <h2>Gastos del mes</h2>
+    <div id="gList"></div>
+    <button class="btn ghost" id="gAdd" style="margin-top:10px">+ Agregar gasto fijo</button>
+    <h2>Imprevistos</h2>
+    <form id="fImp" class="card">
+      <div class="f2">
+        <div><label for="xDesc">Qué fue</label><input id="xDesc" placeholder="Ej. llanta nueva" required></div>
+        <div><label for="xMonto">Monto</label><input id="xMonto" inputmode="decimal" placeholder="$0.00" required></div>
+      </div>
+      <div class="f2">
+        <div><label for="xCat">Categoría</label><select id="xCat"><option>Carro / Camioneta</option><option>Casa</option><option>Salud</option><option>ATV</option><option>Otro</option></select></div>
+        <div><label for="xFecha">Fecha</label><input id="xFecha" type="date" required></div>
+      </div>
+      <button class="btn warn" type="submit">Agregar imprevisto</button>
+    </form>
+    <div id="impList" style="margin-top:10px"></div>
+  </section>
+
+  <!-- AHORRO -->
+  <section id="v-ahorro" hidden>
+    <div class="hero" style="background:var(--navy);color:#fff">
+      <span style="font-size:13px;opacity:.85">Total ahorrado</span>
+      <span class="big" id="aTotal">$0</span>
+      <span style="font-size:13px;opacity:.85" id="aMonths"></span>
+    </div>
+    <form id="fAh" class="card" style="margin-top:12px">
+      <label for="aMonto">Cantidad</label>
+      <input id="aMonto" class="amt" inputmode="decimal" placeholder="$0.00">
+      <div class="two">
+        <button class="btn acc" type="button" id="aDep">Agregar</button>
+        <button class="btn ghost" type="button" id="aRet">Sacar</button>
+      </div>
+    </form>
+    <div class="card" style="margin-top:12px;background:var(--warnBg);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <div><div style="font-size:12px;color:var(--warn)">Este mes te faltan</div><div style="font-size:22px;font-weight:700;color:var(--warn)" id="aFalta"></div><div style="font-size:12px;color:var(--warn)" id="aHint"></div></div>
+      <button class="btn warn" type="button" id="aPass" style="width:auto;padding:0 16px">Pasar a ingresos</button>
+    </div>
+    <h2>Movimientos</h2>
+    <div id="ahList"></div>
+  </section>
+
+  <section id="backup" class="card" style="margin-top:22px">
+    <div style="font-size:14px;font-weight:600">Respaldo</div>
+    <div style="font-size:12px;color:var(--mute);margin:2px 0 10px">Tus datos se guardan solo en este teléfono. Descarga un respaldo de vez en cuando (por ejemplo, a Archivos o iCloud).</div>
+    <div class="two">
+      <button class="btn ghost" type="button" id="bExp">Descargar respaldo</button>
+      <label class="btn ghost" for="bImp" style="font-size:15px">Restaurar</label>
+    </div>
+    <input type="file" id="bImp" accept="application/json,.json" hidden>
+  </section>
+  <p class="status" id="status">Guardado en este teléfono</p>
+</main>
+
+<nav><div>
+  <button data-tab="inicio" class="on"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Inicio</button>
+  <button data-tab="ingresos"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"/></svg>Ingresos</button>
+  <button data-tab="gastos"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg>Gastos</button>
+  <button data-tab="ahorro"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M15 9.5c-.5-1-1.6-1.5-3-1.5-1.7 0-3 .8-3 2s1.3 1.7 3 2 3 .8 3 2-1.3 2-3 2c-1.4 0-2.5-.5-3-1.5M12 6v12"/></svg>Ahorro</button>
+</div></nav>
+
+<div class="modal" id="modal" hidden>
+  <form class="sheet" id="fG">
+    <h2 style="margin-top:0" id="gmTitle">Gasto fijo</h2>
+    <div><label for="gN">Nombre</label><input id="gN" required></div>
+    <div class="f2">
+      <div><label for="gM">Monto</label><input id="gM" inputmode="decimal" required></div>
+      <div><label for="gFr">Frecuencia</label><select id="gFr"><option>Mensual</option><option>Semanal</option><option>Anual</option></select></div>
+    </div>
+    <div class="f2">
+      <div><label for="gTp">Tipo</label><select id="gTp"><option>Fijo</option><option>Variable</option></select></div>
+      <div><label for="gD">Día de pago</label><input id="gD" type="number" min="1" max="31" inputmode="numeric" placeholder="Opcional"></div>
+    </div>
+    <div class="two"><button class="btn ghost" type="button" id="gDel">Borrar</button><button class="btn acc" type="submit">Guardar</button></div>
+    <button class="btn ghost" type="button" id="gCancel" style="margin-top:0">Cancelar</button>
+  </form>
+</div>
+
+<div class="toast" id="toast" hidden><span id="toastMsg"></span><button id="undo">Deshacer</button></div>
+
+<script>
+{
+const $ = (id) => document.getElementById(id);
+const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num = (v) => { const n = parseFloat(String(v ?? '').replace(/[^0-9.]/g, '')); return isFinite(n) ? n : 0; };
+const money = (n, dec) => (n < 0 ? '-$' : '$') + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: dec ? 2 : 0, maximumFractionDigits: dec ? 2 : 0 });
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const pad = (n) => String(n).padStart(2, '0');
+const iso = (d) => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+const FUENTES = ['Ruta Utz', 'National Food', 'Trading', 'Otro'];
+const X = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+
+let S = { gastos: [], ingresos: [], imprevistos: [], ahorro: [] };
+let tab = 'inicio', src = 'Ruta Utz', editing = null, undoState = null, undoTimer = 0;
+const now = new Date();
+let mStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+const mEnd = () => new Date(mStart.getFullYear(), mStart.getMonth() + 1, 0);
+const inMonth = (s) => { if (!s) return false; const [y, m] = s.split('-').map(Number); return y === mStart.getFullYear() && m - 1 === mStart.getMonth(); };
+const mensual = (g) => g.freq === 'Semanal' ? g.monto * 52 / 12 : g.freq === 'Anual' ? g.monto / 12 : g.monto;
+const fdate = (s) => { const [y, m, d] = s.split('-'); return m + '/' + d + '/' + y; };
+
+function calc() {
+  const fijos = S.gastos.filter((g) => g.tipo !== 'Variable').reduce((a, g) => a + mensual(g), 0);
+  const vars = S.gastos.filter((g) => g.tipo === 'Variable').reduce((a, g) => a + mensual(g), 0);
+  const gastos = fijos + vars;
+  const ingM = S.ingresos.filter((i) => inMonth(i.fecha));
+  const imp = S.imprevistos.filter((i) => inMonth(i.fecha)).reduce((a, i) => a + i.monto, 0);
+  const ganado = ingM.reduce((a, i) => a + i.monto, 0);
+  const pasado = S.ahorro.filter((a) => a.tipo === 'pasado' && inMonth(a.fecha)).reduce((a, x) => a + x.monto, 0);
+  const cubrir = gastos + imp;
+  const falta = Math.max(0, cubrir - ganado - pasado);
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const end = mEnd();
+  const start = today > mStart ? today : mStart;
+  const weeks = today > end ? 0 : Math.ceil(((end - start) / 864e5 + 1) / 7);
+  const porSemana = falta === 0 ? 0 : weeks === 0 ? falta : falta / weeks;
+  const prom = ingM.length ? ganado / ingM.length : 0;
+  const ahorro = S.ahorro.reduce((a, x) => a + (x.tipo === 'deposito' ? x.monto : -x.monto), 0);
+  return { fijos, vars, gastos, imp, ganado, pasado, cubrir, falta, weeks, porSemana, prom, ahorro, sobrante: Math.max(0, ganado + pasado - cubrir), ingM };
+}
+
+function rowHTML(t, s, a, aStyle, delId, kind) {
+  return '<div class="li"><div><div class="t">' + esc(t) + '</div><div class="s">' + esc(s) + '</div></div><div style="display:flex;align-items:center;gap:4px"><span class="a"' + (aStyle ? ' style="' + aStyle + '"' : '') + '>' + esc(a) + '</span>' +
+    (delId ? '<button class="del" aria-label="Borrar" data-del="' + esc(delId) + '" data-kind="' + kind + '">' + X + '</button>' : '') + '</div></div>';
+}
+const listOrEmpty = (rows, msg) => rows.length ? '<div class="list">' + rows.join('') + '</div>' : '<div class="empty">' + esc(msg) + '</div>';
+const byDate = (a, b) => (b.fecha || '').localeCompare(a.fecha || '');
+
+function render() {
+  const c = calc();
+  const mname = MESES[mStart.getMonth()];
+  $('mlabel').textContent = mname[0].toUpperCase() + mname.slice(1) + ' ' + mStart.getFullYear();
+  $('title').textContent = { inicio: 'Inicio', ingresos: 'Ingresos', gastos: 'Gastos', ahorro: 'Ahorro' }[tab];
+  for (const v of ['inicio', 'ingresos', 'gastos', 'ahorro']) $('v-' + v).hidden = v !== tab;
+  document.querySelectorAll('nav button').forEach((b) => b.classList.toggle('on', b.dataset.tab === tab));
+
+  // Inicio
+  $('hWeek').textContent = money(c.porSemana);
+  $('hWeeks').textContent = c.falta === 0 ? 'ya cubriste el mes' : c.weeks > 0 ? '× ' + c.weeks + (c.weeks === 1 ? ' semana' : ' semanas') : 'el mes ya terminó';
+  const got = c.ganado + c.pasado;
+  $('hBar').style.width = (c.cubrir ? Math.min(100, got / c.cubrir * 100) : 0).toFixed(1) + '%';
+  $('hGot').textContent = 'Ganado ' + money(got) + (c.pasado ? ' (incl. ' + money(c.pasado) + ' de ahorro)' : '');
+  $('hGoal').textContent = 'Meta ' + money(c.cubrir);
+  const st = $('hStatus');
+  if (c.falta === 0 && c.cubrir > 0) { st.textContent = 'Gastos del mes cubiertos. Te sobran ' + money(c.sobrante) + '.'; st.style.cssText = 'margin-top:12px;background:var(--okBg);color:var(--ok)'; }
+  else { st.textContent = 'Faltan ' + money(c.falta) + (c.ahorro > 0 ? (c.ahorro >= c.falta ? '. Tu ahorro alcanza para cubrirlo.' : '. Tu ahorro cubre ' + money(c.ahorro) + '.') : '.'); st.style.cssText = 'margin-top:12px;background:var(--warnBg);color:var(--warn)'; }
+  $('sFijos').textContent = money(c.gastos); $('sImp').textContent = money(c.imp); $('sProm').textContent = money(c.prom); $('sSob').textContent = money(c.sobrante);
+  const td = now.getDate();
+  const pays = S.gastos.filter((g) => g.dia).map((g) => ({ g, k: (g.dia - td + 31) % 31 })).sort((a, b) => a.k - b.k).slice(0, 4);
+  $('nextPays').innerHTML = listOrEmpty(pays.map(({ g }) => rowHTML(g.nombre, 'Día ' + g.dia, money(g.monto))), 'Ponle día de pago a tus gastos en la pestaña Gastos.');
+
+  // Ingresos
+  $('iSrc').innerHTML = FUENTES.map((f) => '<button type="button" class="chip' + (f === src ? ' on' : '') + '" data-src="' + esc(f) + '">' + esc(f) + '</button>').join('');
+  const nv = num($('iMonto').value);
+  const after = Math.max(0, c.falta - nv);
+  $('iPreview').hidden = !nv;
+  $('iPreview').textContent = after === 0 ? 'Con este ingreso cubres el mes.' : 'Con este ingreso te faltarían ' + money(after) + (c.weeks > 1 ? ', unos ' + money(after / Math.max(1, c.weeks - 1)) + ' por semana en las ' + (c.weeks - 1) + ' que quedan.' : '.');
+  $('ingList').innerHTML = listOrEmpty(c.ingM.slice().sort(byDate).map((i) => rowHTML(i.fuente + (i.nota ? ' · ' + i.nota : ''), fdate(i.fecha), '+' + money(i.monto, 1), 'color:var(--pos)', i.id, 'ingresos')), 'Todavía no hay ingresos este mes.');
+
+  // Gastos
+  $('gF').textContent = money(c.fijos); $('gV').textContent = money(c.vars); $('gT').textContent = money(c.gastos);
+  $('gList').innerHTML = S.gastos.length ? '<div class="list">' + S.gastos.slice().sort((a, b) => mensual(b) - mensual(a)).map((g) =>
+    '<button class="li" data-edit="' + esc(g.id) + '" style="width:100%;background:none;border:0;border-bottom:1px solid var(--line);color:inherit;font:inherit;text-align:left;cursor:pointer;padding:0">' +
+    '<div style="display:flex;align-items:center"><span class="dot" style="background:' + (g.tipo === 'Variable' ? '#EA580C' : 'var(--acc)') + '"></span><div><div class="t">' + esc(g.nombre) + '</div><div class="s">' + esc((g.dia ? 'Día ' + g.dia + ' · ' : '') + g.freq + (g.freq !== 'Mensual' ? ' ' + money(g.monto) : '')) + '</div></div></div>' +
+    '<span class="a">' + esc(money(mensual(g))) + '</span></button>').join('') + '</div>' : '<div class="empty">No hay gastos fijos. Agrega el primero.</div>';
+  $('impList').innerHTML = listOrEmpty(S.imprevistos.filter((i) => inMonth(i.fecha)).sort(byDate).map((i) => rowHTML(i.desc, i.cat + ' · ' + fdate(i.fecha), money(i.monto, 1), 'color:var(--neg)', i.id, 'imprevistos')), 'Sin imprevistos este mes.');
+
+  // Ahorro
+  $('aTotal').textContent = money(c.ahorro, 1);
+  $('aMonths').textContent = c.gastos ? 'Cubre ' + Math.max(0, c.ahorro / c.gastos).toFixed(1) + ' meses de gastos (' + money(c.gastos) + '/mes)' : '';
+  $('aFalta').textContent = c.falta ? money(c.falta) : 'Cubierto';
+  $('aHint').textContent = c.falta === 0 ? 'No hace falta usar el ahorro' : c.ahorro >= c.falta ? 'Tu ahorro alcanza para cubrirlo' : 'Tu ahorro cubre ' + money(Math.max(0, c.ahorro));
+  $('aPass').disabled = !(c.falta > 0 && c.ahorro > 0); $('aPass').style.opacity = $('aPass').disabled ? .5 : 1;
+  const lab = { deposito: 'Depósito', retiro: 'Retiro', pasado: 'Pasado a ingresos' };
+  $('ahList').innerHTML = listOrEmpty(S.ahorro.slice().sort(byDate).slice(0, 30).map((a) => rowHTML(lab[a.tipo] || a.tipo, fdate(a.fecha), (a.tipo === 'deposito' ? '+' : '-') + money(a.monto, 1), 'color:' + (a.tipo === 'deposito' ? 'var(--pos)' : 'var(--neg)'), a.id, 'ahorro')), 'Todavía no hay movimientos. Escribe una cantidad y toca Agregar.');
+}
+
+// ---- saving: one write at a time ----
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(S)); setStatus('Guardado en este teléfono'); }
+  catch (_) { setStatus('No se pudo guardar en este teléfono'); }
+}
+const setStatus = (t) => { $('status').textContent = t; };
+function commit(msg) {
+  render(); save();
+  if (msg) { $('toastMsg').textContent = msg; $('toast').hidden = false; clearTimeout(undoTimer); undoTimer = setTimeout(() => { $('toast').hidden = true; undoState = null; }, 6000); }
+}
+function snapshot() { undoState = JSON.stringify(S); }
+
+// ---- events ----
+document.querySelector('nav').addEventListener('click', (e) => { const b = e.target.closest('[data-tab]'); if (b) { tab = b.dataset.tab; render(); scrollTo(0, 0); } });
+document.querySelectorAll('[data-go]').forEach((b) => b.addEventListener('click', () => { tab = b.dataset.go; render(); scrollTo(0, 0); }));
+$('prev').addEventListener('click', () => { mStart = new Date(mStart.getFullYear(), mStart.getMonth() - 1, 1); render(); });
+$('next').addEventListener('click', () => { mStart = new Date(mStart.getFullYear(), mStart.getMonth() + 1, 1); render(); });
+$('iSrc').addEventListener('click', (e) => { const b = e.target.closest('[data-src]'); if (b) { src = b.dataset.src; render(); } });
+$('iMonto').addEventListener('input', render);
+
+$('fIng').addEventListener('submit', (e) => {
+  e.preventDefault(); const m = num($('iMonto').value); if (!m) return;
+  snapshot(); S.ingresos.push({ id: uid(), fecha: $('iFecha').value, monto: m, fuente: src, nota: $('iNota').value.trim() });
+  $('iMonto').value = ''; $('iNota').value = ''; commit('Ingreso de ' + money(m, 1) + ' guardado');
+});
+$('fImp').addEventListener('submit', (e) => {
+  e.preventDefault(); const m = num($('xMonto').value); if (!m) return;
+  snapshot(); S.imprevistos.push({ id: uid(), fecha: $('xFecha').value, desc: $('xDesc').value.trim(), monto: m, cat: $('xCat').value });
+  $('xMonto').value = ''; $('xDesc').value = ''; commit('Imprevisto agregado');
+});
+function ahorroMove(tipo) {
+  const c = calc(); let m = num($('aMonto').value);
+  if (tipo === 'pasado') m = Math.min(m || c.falta, c.falta, c.ahorro);
+  if (tipo === 'retiro') m = Math.min(m, c.ahorro);
+  if (!(m > 0)) return;
+  snapshot(); S.ahorro.push({ id: uid(), fecha: iso(new Date()), monto: Math.round(m * 100) / 100, tipo });
+  $('aMonto').value = '';
+  commit({ deposito: 'Agregaste ', retiro: 'Sacaste ', pasado: 'Pasaste a ingresos ' }[tipo] + money(m, 1));
+}
+$('aDep').addEventListener('click', () => ahorroMove('deposito'));
+$('aRet').addEventListener('click', () => ahorroMove('retiro'));
+$('aPass').addEventListener('click', () => ahorroMove('pasado'));
+
+document.addEventListener('click', (e) => {
+  const d = e.target.closest('[data-del]');
+  if (d) { snapshot(); const k = d.dataset.kind; S[k] = S[k].filter((x) => x.id !== d.dataset.del); commit('Borrado'); return; }
+  const ed = e.target.closest('[data-edit]');
+  if (ed) openG(S.gastos.find((g) => g.id === ed.dataset.edit));
+});
+$('undo').addEventListener('click', () => { if (undoState) { S = JSON.parse(undoState); undoState = null; $('toast').hidden = true; render(); save(); } });
+
+function openG(g) {
+  editing = g || null;
+  $('gmTitle').textContent = g ? 'Editar gasto' : 'Nuevo gasto fijo';
+  $('gN').value = g ? g.nombre : ''; $('gM').value = g ? g.monto : ''; $('gFr').value = g ? g.freq : 'Mensual';
+  $('gTp').value = g ? g.tipo : 'Fijo'; $('gD').value = g && g.dia ? g.dia : ''; $('gDel').hidden = !g;
+  $('modal').hidden = false; $('gN').focus();
+}
+$('gAdd').addEventListener('click', () => openG(null));
+$('gCancel').addEventListener('click', () => { $('modal').hidden = true; });
+$('modal').addEventListener('click', (e) => { if (e.target === $('modal')) $('modal').hidden = true; });
+$('fG').addEventListener('submit', (e) => {
+  e.preventDefault(); snapshot();
+  const dia = parseInt($('gD').value, 10);
+  const g = { id: editing ? editing.id : uid(), nombre: $('gN').value.trim(), monto: num($('gM').value), freq: $('gFr').value, tipo: $('gTp').value, dia: dia >= 1 && dia <= 31 ? dia : null };
+  S.gastos = editing ? S.gastos.map((x) => x.id === g.id ? g : x) : S.gastos.concat(g);
+  $('modal').hidden = true; commit(editing ? 'Gasto actualizado' : 'Gasto agregado');
+});
+$('gDel').addEventListener('click', () => { if (!editing) return; snapshot(); S.gastos = S.gastos.filter((x) => x.id !== editing.id); $('modal').hidden = true; commit('Gasto borrado'); });
+
+$('iFecha').value = iso(now); $('xFecha').value = iso(now);
+
+// ---- data (guardado en este teléfono) ----
+const KEY = 'finanzas-casa-v1';
+const SEED = { gastos: [
+  { id: 'g01', nombre: 'Renta', monto: 2300, freq: 'Mensual', tipo: 'Fijo', dia: 1 },
+  { id: 'g02', nombre: 'Comida', monto: 1000, freq: 'Mensual', tipo: 'Fijo', dia: null },
+  { id: 'g03', nombre: 'Pago de camioneta', monto: 540, freq: 'Mensual', tipo: 'Fijo', dia: 29 },
+  { id: 'g04', nombre: 'Gasolina', monto: 120, freq: 'Semanal', tipo: 'Variable', dia: null },
+  { id: 'g05', nombre: 'Celular', monto: 250, freq: 'Mensual', tipo: 'Fijo', dia: null },
+  { id: 'g06', nombre: 'Pago del ATV', monto: 230, freq: 'Mensual', tipo: 'Fijo', dia: 30 },
+  { id: 'g07', nombre: 'Seguro de carros', monto: 200, freq: 'Mensual', tipo: 'Fijo', dia: 27 },
+  { id: 'g08', nombre: 'Seguro médico', monto: 120, freq: 'Mensual', tipo: 'Fijo', dia: null },
+  { id: 'g09', nombre: 'Gym', monto: 100, freq: 'Mensual', tipo: 'Fijo', dia: null },
+  { id: 'g10', nombre: 'Suscripciones', monto: 100, freq: 'Mensual', tipo: 'Fijo', dia: null }
+], ingresos: [], imprevistos: [], ahorro: [] };
+const clean = (d) => ({ gastos: Array.isArray(d.gastos) ? d.gastos : [], ingresos: Array.isArray(d.ingresos) ? d.ingresos : [], imprevistos: Array.isArray(d.imprevistos) ? d.imprevistos : [], ahorro: Array.isArray(d.ahorro) ? d.ahorro : [] });
+try { const raw = localStorage.getItem(KEY); S = raw ? clean(JSON.parse(raw)) : JSON.parse(JSON.stringify(SEED)); }
+catch (_) { S = JSON.parse(JSON.stringify(SEED)); setStatus('No se pudo leer lo guardado'); }
+try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (_) {}
+render();
+
+$('bExp').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(S, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'finanzas-respaldo-' + iso(new Date()) + '.json'; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+});
+$('bImp').addEventListener('change', async (e) => {
+  const f = e.target.files && e.target.files[0]; if (!f) return;
+  try { const d = clean(JSON.parse(await f.text())); snapshot(); S = d; commit('Respaldo restaurado'); }
+  catch (_) { setStatus('Ese archivo no es un respaldo válido'); }
+  e.target.value = '';
+});
+}
+</script>
+</body>
+</html>
